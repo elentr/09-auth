@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import Link from 'next/link';
+import type { NotesHttpResponse } from '@/lib/api/clientApi';
 
 import css from '@/components/NotesPage/NotesPage.module.css';
 
@@ -13,7 +15,8 @@ import NoteList from '@/components/NoteList/NoteList';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
 
 interface NotesClientProps {
   tag?: string;
@@ -23,13 +26,17 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearchValue] = useDebounce(searchValue, 700);
   const [currentPage, setCurrentPage] = useState(1);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
 
-  const normalizedTag =
-    tag && tag !== 'All'
-      ? tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
-      : undefined;
+  const normalizedTag = useMemo(() => {
+    if (!tag || tag === 'All') return undefined;
+    return tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+  }, [tag]);
 
-  const { data, isFetching, isError, isSuccess } = useQuery({
+  const { data, isFetching, isError, isSuccess } = useQuery<
+    NotesHttpResponse,
+    AxiosError
+  >({
     queryKey: [
       'notes',
       {
@@ -42,10 +49,14 @@ export default function NotesClient({ tag }: NotesClientProps) {
       fetchNotes({
         search: debouncedSearchValue,
         page: currentPage,
+        perPage: 12,
         tag: normalizedTag,
       }),
+    enabled: isAuthenticated,
     placeholderData: keepPreviousData,
-    refetchOnMount: false,
+    staleTime: 30_000,
+    retry: (failureCount, axiosErr) =>
+      axiosErr?.response?.status !== 401 && failureCount < 2,
   });
 
   const handleSearch = (value: string) => {

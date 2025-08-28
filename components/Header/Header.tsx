@@ -1,6 +1,7 @@
 import css from './Header.module.css';
 import Link from 'next/link';
 import TagsMenu from '@/components/TagsMenu/TagsMenu';
+import AuthNavigation from '../AuthNavigation/AuthNavigation';
 
 const Header = async () => {
   return (
@@ -10,12 +11,15 @@ const Header = async () => {
       </Link>
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
-          <li>
-            <Link href="/">Home</Link>
+          <li className={css.navigationItem}>
+            <Link className={css.navigationLink} href="/">
+              Home
+            </Link>
           </li>
-          <li>
+          <li className={css.navigation}>
             <TagsMenu />
           </li>
+          <AuthNavigation />
         </ul>
       </nav>
     </header>
