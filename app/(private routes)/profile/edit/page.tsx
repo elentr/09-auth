@@ -3,7 +3,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
-import { updateUser } from '@/lib/api/clientApi';
+import { updateUser } from '@/lib/api/serverApi';
 import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import css from './EditProfilePage.module.css';

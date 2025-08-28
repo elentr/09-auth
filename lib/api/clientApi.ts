@@ -41,13 +41,6 @@ export async function getMe(): Promise<User> {
   const { data } = await api.get<User>('/users/me');
   return data;
 }
-export async function updateUser(payload: {
-  username?: string;
-  email?: string;
-}): Promise<User> {
-  const { data } = await api.patch<User>('/users/me', payload);
-  return data;
-}
 
 export async function fetchNotes(params: {
   search?: string;

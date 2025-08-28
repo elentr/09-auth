@@ -28,6 +28,14 @@ export async function checkServerSession(): Promise<
   });
 }
 
+export async function updateUser(payload: {
+  username?: string;
+  email?: string;
+}): Promise<User> {
+  const { data } = await api.patch<User>('/users/me', payload);
+  return data;
+}
+
 export async function sHasSession(): Promise<boolean> {
   const res = await checkServerSession();
   const data = res.data;
