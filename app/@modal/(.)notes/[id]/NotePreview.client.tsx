@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Modal from '@/components/Modal/Modal';
-import css from './NotePreview.module.css';
+import css from './NotePrev.module.css';
 import { fetchNoteById } from '@/lib/api/clientApi';
 
 const formatDate = (date?: string) => {
