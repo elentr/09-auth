@@ -48,7 +48,7 @@ export default async function NotesPage({ params }: NotesPageProps) {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: ['notes', { page: 1, tag: tag ?? '', search: '' }],
-    queryFn: () => fetchNotes({ page: 1, tag }),
+    queryFn: () => fetchNotes(1, 12, '', tag),
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
