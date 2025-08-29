@@ -6,7 +6,6 @@ import { register, RegisterRequest } from '@/lib/api/clientApi';
 import css from './SignUpPage.module.css';
 import { useAuthStore } from '@/lib/store/authStore';
 
-// Визначення інтерфейсу ApiError у поточному файлі
 interface ApiError {
   response?: {
     data?: {
