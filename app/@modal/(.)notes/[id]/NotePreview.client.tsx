@@ -41,8 +41,9 @@ export default function NotePreviewClient() {
           </div>
         </div>
         <p className={css.content}>{note.content}</p>
+        <br />
         <p className={css.item}>ID: {note.id}</p>
-        <p className={css.tag}>Tag: {note.tag}</p>
+        <p className={css.tag}>{note.tag}</p>
         <p className={css.date}>Created At: {formatDate(note.createdAt)}</p>
         <button
           type="button"
