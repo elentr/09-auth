@@ -1,4 +1,4 @@
-import { sFetchNoteById } from '@/lib/api/serverApi';
+import { fetchNoteById } from '@/lib/api/serverApi';
 import {
   dehydrate,
   HydrationBoundary,
@@ -10,13 +10,15 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function NoteDetailsModal({ params }: Props) {
   const { id } = await params;
-  const qc = new QueryClient();
-  await qc.prefetchQuery({
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
     queryKey: ['note', id],
-    queryFn: () => sFetchNoteById(id),
+    queryFn: () => fetchNoteById(id),
   });
+
   return (
-    <HydrationBoundary state={dehydrate(qc)}>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <NotePreviewClient />
     </HydrationBoundary>
   );
