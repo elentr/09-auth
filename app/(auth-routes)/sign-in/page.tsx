@@ -1,51 +1,48 @@
 'use client';
-
-import { FormEvent, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { loginUser } from '@/lib/api/clientApi';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { login, LoginRequest } from '@/lib/api/clientApi';
 import css from './SignInPage.module.css';
+import { useAuthStore } from '@/lib/store/authStore';
 
 interface ApiError {
-  response?: { data?: { message?: string } };
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
 }
 
-export default function SignInPage() {
+export default function SignIn() {
   const router = useRouter();
-  const sp = useSearchParams();
-  const rawFrom = sp.get('from');
-  const from = rawFrom ? decodeURIComponent(rawFrom) : '/profile';
-
-  const setUser = useAuthStore(s => s.setUser);
   const [error, setError] = useState('');
+  const setUser = useAuthStore(state => state.setUser);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      loginUser(email, password),
-    onSuccess: user => {
-      setUser(user);
-      router.replace(from);
-    },
-    onError: (err: ApiError) => {
-      setError(err?.response?.data?.message || 'Login failed');
-    },
-  });
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    mutate({
-      email: String(fd.get('email') || ''),
-      password: String(fd.get('password') || ''),
-    });
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      const formValues = Object.fromEntries(formData) as LoginRequest;
+      const res = await login(formValues);
+      console.log('res', res);
+      if (res) {
+        setUser(res);
+        router.push('/profile');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (error) {
+      setError(
+        (error as ApiError).response?.data?.message ??
+          (error as ApiError).message ??
+          'Oops... some error'
+      );
+    }
   };
 
   return (
     <main className={css.mainContent}>
-      <form className={css.form} onSubmit={handleSubmit}>
+      <form action={handleSubmit} className={css.form}>
         <h1 className={css.formTitle}>Sign in</h1>
-
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
           <input
@@ -53,12 +50,9 @@ export default function SignInPage() {
             type="email"
             name="email"
             className={css.input}
-            autoComplete="email"
             required
-            onChange={() => error && setError('')}
           />
         </div>
-
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
           <input
@@ -66,24 +60,15 @@ export default function SignInPage() {
             type="password"
             name="password"
             className={css.input}
-            autoComplete="current-password"
             required
-            onChange={() => error && setError('')}
           />
         </div>
-
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={isPending}
-            aria-busy={isPending}
-          >
-            {isPending ? 'Logging in...' : 'Log in'}
+          <button type="submit" className={css.submitButton}>
+            Log in
           </button>
         </div>
-
-        {error && <p className={css.error}>{error}</p>}
+        <p className={css.error}>{error}</p>
       </form>
     </main>
   );

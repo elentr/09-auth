@@ -1,89 +1,73 @@
 'use client';
-
-import { FormEvent, useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
-import { updateUser } from '@/lib/api/serverApi';
-import { useMutation } from '@tanstack/react-query';
-import Image from 'next/image';
+import { getMe, updateMe } from '@/lib/api/clientApi';
 import css from './EditProfilePage.module.css';
-
-export default function EditProfilePage() {
-  const { user, setUser } = useAuthStore();
+import Image from 'next/image';
+import { useAuthStore } from '@/lib/store/authStore';
+export default function EditProfile() {
+  const [username, setUsername] = useState('');
+  const user = useAuthStore(state => state.user);
+  const setUser = useAuthStore(state => state.setUser);
   const router = useRouter();
-  const [username, setUsername] = useState(user?.username || '');
 
   useEffect(() => {
-    setUsername(user?.username || '');
-  }, [user]);
+    getMe().then(user => {
+      setUsername(user.username ?? '');
+    });
+  }, []);
 
-  const mutation = useMutation({
-    mutationFn: () => {
-      if (!user) return Promise.reject('No user');
-      return updateUser({ username, email: user.email });
-    },
-    onSuccess: data => {
-      setUser(data);
-      router.push('/profile');
-    },
-  });
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    mutation.mutate();
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
   };
-
-  if (!user) return <div>Loading...</div>;
-
-  const avatarSrc =
-    user.avatar && user.avatar.trim().length > 0 ? user.avatar : '/avatar.png';
-
+  const handleSaveUser = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const updatedUser = await updateMe({ username });
+    setUser(updatedUser);
+    router.push('/profile');
+  };
+  const handleBack = () => {
+    router.back();
+  };
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
+
         <Image
-          src={avatarSrc}
-          alt={`${username} avatar`}
+          src="https://ac.goit.global/fullstack/react/default-avatar.jpg"
+          alt="User Avatar"
           width={120}
           height={120}
           className={css.avatar}
         />
 
-        <form className={css.profileInfo} onSubmit={handleSubmit}>
+        <form onSubmit={handleSaveUser} className={css.profileInfo}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
             <input
               id="username"
               type="text"
-              className={css.input}
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              className={css.input}
+              onChange={handleChange}
             />
           </div>
 
-          <p>Email: {user.email}</p>
+          <p>Email: {user?.email}</p>
 
           <div className={css.actions}>
-            <button
-              type="submit"
-              className={css.saveButton}
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? 'Saving...' : 'Save'}
+            <button type="submit" className={css.saveButton}>
+              Save
             </button>
             <button
               type="button"
               className={css.cancelButton}
-              onClick={() => router.push('/profile')}
+              onClick={handleBack}
             >
               Cancel
             </button>
           </div>
-
-          {mutation.isError && (
-            <p className={css.error}>Error updating profile</p>
-          )}
         </form>
       </div>
     </main>
