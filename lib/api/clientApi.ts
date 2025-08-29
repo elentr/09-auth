@@ -2,7 +2,7 @@ import { nextServer } from './api';
 import type { CreateNotePayload, Note } from '@/types/note';
 import type { User } from '@/types/user';
 
-export interface FetchNotesResponse {
+export interface NotesHttpResponse {
   notes: Note[];
   totalPages: number;
 }
@@ -11,11 +11,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
 }
-
-// export interface RegisterResponse {
-//   username: string;
-//   email: string;
-// }
 
 export type LoginRequest = {
   email: string;
@@ -64,8 +59,8 @@ export const fetchNotes = async (
   perPage: number,
   search: string = '',
   tag?: string
-): Promise<FetchNotesResponse> => {
-  const response = await nextServer.get<FetchNotesResponse>('/notes', {
+): Promise<NotesHttpResponse> => {
+  const response = await nextServer.get<NotesHttpResponse>('/notes', {
     params: {
       page,
       perPage,

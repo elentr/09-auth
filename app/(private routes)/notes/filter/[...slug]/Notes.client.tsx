@@ -46,12 +46,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
       },
     ],
     queryFn: () =>
-      fetchNotes({
-        search: debouncedSearchValue,
-        page: currentPage,
-        perPage: 12,
-        tag: normalizedTag,
-      }),
+      fetchNotes(currentPage, 12, debouncedSearchValue, normalizedTag),
     enabled: isAuthenticated,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
